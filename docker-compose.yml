@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  sqlServer:
+    image: mysql:latest
+    volumes:
+      - ./mysql_data/:/var/lib/mysql/
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+    networks:
+      - backend
+    security_opt:
+      - seccomp:unconfined
+
+
+  phpmyadm:
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    links:
+      - sqlServer:db
+    networks:
+      - backend
+    ports:
+      - 8081:80
+
+  webVoting:
+    image: jhagdu/centos_httpd_php:1.0
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
+    restart: always
+    volumes:
+      - ./web_data/:/var/www/html/
+    networks:
+      - frontend
+    ports:
+      - 8080:80
+    depends_on:
+      - sqlServer
+      - phpmyadm
+
+networks:
+  frontend:
+  backend:  
